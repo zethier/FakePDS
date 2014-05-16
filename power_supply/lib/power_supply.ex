@@ -26,11 +26,13 @@ defmodule PowerSupply do
 
 	###### public API ######
   def start_link do
-    :gen_server.start_link(__MODULE__, [], [])
+		IO.puts "in start_link"
+    :gen_server.start_link(__MODULE__, [], [])	# will call init to initialize
   end
 
 	def create(pid) do
-		:gen_server.call(pid, {:create})
+		IO.puts "in create"
+		:gen_server.cast(pid, {:create})
 	end
 
 	def create(pid, ipStr, macStr, nameStr) do
@@ -48,22 +50,28 @@ defmodule PowerSupply do
 
 	###### Callbacks ######
 	# Callback - invoke when Server is started
-	def init() do
-		IO.puts "PowerSupply init."
-		{:ok, pid} = :gen_server.start_link(__MODULE__, [], [])
+	def init(_args) do
 		device = %Settings{}
+		IO.puts "PowerSupply init"
+		IO.inspect(device)
 		{:ok, device}
 	end
 
 	# Callbacks - work with synchronous messages
 	# def handle_call
-	def handle_call(:create, _from, device) do
+	def handle_cast(:create, device) do
+		IO.puts "In handle_cast::create/0 \n"
 		# , "10.1.3.19", "FF:EE:CC:DD", "testPDS"
 		newDevice = %Settings{device | ip: "10.1.5.19", macAddress: "FF:EE:CC:DD", name: "testPDS"}
-		IO.puts "In handle_case::create/0"
 		{:reply, newDevice}		
 	end	
 
+	def handle_cast({:create, %Settings{}}, device) do
+		IO.puts "In handle_cast::create/1 \n"
+		# , "10.1.3.19", "FF:EE:CC:DD", "testPDS"
+		newDevice = %Settings{device | ip: "10.1.5.19", macAddress: "FF:EE:CC:DD", name: "testPDS"}
+		{:reply, newDevice}		
+	end	
 
 	def handle_call({:create, ipStr, macStr, nameStr}, _from, device) do
 		newDevice = %Settings{device | ip: ipStr, macAddress: macStr, name: nameStr}
