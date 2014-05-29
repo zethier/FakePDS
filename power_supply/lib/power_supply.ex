@@ -36,7 +36,7 @@ defmodule PowerSupply do
 	end
 
 	def create(pid, ipStr, macStr, nameStr) do
-		:gen_server.call(pid, {:create, ipStr, macStr, nameStr})		
+		:gen_server.cast(pid, {:create, ipStr, macStr, nameStr})		
 	end
 
 	def hello do
@@ -59,11 +59,12 @@ defmodule PowerSupply do
 
 	# Callbacks - work with synchronous messages
 	# def handle_call
-	def handle_cast(:create, device) do
+	def handle_cast({:create}, device) do
 		IO.puts "In handle_cast::create/0 \n"
 		# , "10.1.3.19", "FF:EE:CC:DD", "testPDS"
 		newDevice = %Settings{device | ip: "10.1.5.19", macAddress: "FF:EE:CC:DD", name: "testPDS"}
-		{:reply, newDevice}		
+		IO.inspect(newDevice)
+		{:noreply, newDevice}		
 	end	
 
 	def handle_cast({:create, %Settings{}}, device) do
@@ -73,10 +74,10 @@ defmodule PowerSupply do
 		{:reply, newDevice}		
 	end	
 
-	def handle_call({:create, ipStr, macStr, nameStr}, _from, device) do
+	def handle_cast({:create, ipStr, macStr, nameStr}, device) do
 		newDevice = %Settings{device | ip: ipStr, macAddress: macStr, name: nameStr}
 		IO.puts "In handle_case::create/3"
-		{:reply, newDevice}		
+		{:noreply, newDevice}		
 	end	
 
 
